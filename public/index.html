@@ -1,1 +1,1134 @@
-hjk
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AttendX — Attendance System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c27;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #ff6b6b;
+      --accent3: #43e97b;
+      --text: #e8e8f0;
+      --muted: #6b6b85;
+      --success: #43e97b;
+      --error: #ff6b6b;
+      --warning: #f7b731;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── PAGES ── */
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: flex; flex-direction: column; }
+
+    /* ── LOGIN PAGE ── */
+    #login-page {
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #login-page::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
+      top: -200px; right: -200px;
+      border-radius: 50%;
+    }
+
+    #login-page::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(67,233,123,0.07) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+      border-radius: 50%;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 1;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -1px;
+    }
+
+    .login-logo span { color: var(--accent); }
+
+    .login-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 36px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .form-group input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus { border-color: var(--accent); }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover { background: #5a52e0; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #0a0a0f;
+    }
+
+    .btn-danger {
+      background: var(--accent2);
+      color: white;
+    }
+
+    .btn-sm {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    .error-msg {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: var(--error);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-top: 16px;
+      display: none;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-user {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .nav-user strong { color: var(--text); }
+
+    .logout-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .logout-btn:hover { color: var(--error); border-color: var(--error); }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 16px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab:hover { color: var(--text); }
+
+    /* ── CONTENT ── */
+    .content {
+      flex: 1;
+      padding: 24px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    /* ── TODAY CARD (Employee) ── */
+    .today-card {
+      background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(67,233,123,0.08));
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .today-date {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .today-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    .time-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .time-btn {
+      padding: 20px 16px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .time-btn-arrival {
+      background: rgba(67,233,123,0.15);
+      border: 1px solid rgba(67,233,123,0.3);
+      color: var(--success);
+    }
+
+    .time-btn-arrival:hover:not(:disabled) {
+      background: rgba(67,233,123,0.25);
+      transform: translateY(-2px);
+    }
+
+    .time-btn-leaving {
+      background: rgba(255,107,107,0.15);
+      border: 1px solid rgba(255,107,107,0.3);
+      color: var(--error);
+    }
+
+    .time-btn-leaving:hover:not(:disabled) {
+      background: rgba(255,107,107,0.25);
+      transform: translateY(-2px);
+    }
+
+    .time-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .time-btn .btn-label { font-size: 11px; opacity: 0.7; font-weight: 400; font-family: 'DM Sans', sans-serif; margin-bottom: 6px; }
+    .time-btn .btn-time { font-size: 20px; }
+    .time-btn .btn-pending { font-size: 13px; opacity: 0.6; font-family: 'DM Sans', sans-serif; font-weight: 400; }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); }
+    .green { color: var(--success); }
+    .red { color: var(--error); }
+    .purple { color: var(--accent); }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 14px;
+      border-bottom: 1px solid rgba(42,42,58,0.5);
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-present { background: rgba(67,233,123,0.15); color: var(--success); }
+    .badge-missed { background: rgba(255,107,107,0.15); color: var(--error); }
+    .badge-partial { background: rgba(247,183,49,0.15); color: var(--warning); }
+
+    /* ── FORM (Admin Create) ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+
+    .inline-form .form-group { margin-bottom: 16px; }
+
+    .inline-form input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .inline-form input:focus { border-color: var(--accent); }
+    .inline-form label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    /* ── EMPLOYEE LIST ── */
+    .emp-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .emp-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      gap: 12px;
+    }
+
+    .emp-info { flex: 1; }
+    .emp-name { font-weight: 500; font-size: 15px; }
+    .emp-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .emp-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: rgba(67,233,123,0.4); color: var(--success); }
+    .toast.error { border-color: rgba(255,107,107,0.4); color: var(--error); }
+
+    /* ── LOADING ── */
+    .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* ── SELECT employee dropdown ── */
+    .emp-select-wrap { margin-bottom: 20px; }
+
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus { border-color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .login-card { padding: 32px 24px; margin: 16px; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .time-btn .btn-time { font-size: 16px; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════ LOGIN PAGE ════════════════════ -->
+<div id="login-page" class="page active">
+  <div class="login-card">
+    <div class="login-logo">Attend<span>X</span></div>
+    <div class="login-subtitle">Company Attendance Management</div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@company.com" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" />
+    </div>
+
+    <button class="btn btn-primary" onclick="doLogin()">Sign In →</button>
+    <div class="error-msg" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ EMPLOYEE PAGE ════════════════════ -->
+<div id="employee-page" class="page">
+  <nav class="navbar">
+    <div class="nav-logo">Attend<span>X</span></div>
+    <div class="nav-right">
+      <div class="nav-user">Welcome, <strong id="emp-name">—</strong></div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('emp', 'today', this)">Today</div>
+    <div class="tab" onclick="switchTab('emp', 'history', this)">My Attendance</div>
+  </div>
+
+  <div class="content">
+
+    <!-- TODAY TAB -->
+    <div id="emp-today" class="tab-content active">
+      <div class="today-card">
+        <div class="today-date" id="today-date-display">—</div>
+        <div class="today-title">Mark Your Attendance</div>
+        <div class="time-buttons">
+          <button class="time-btn time-btn-arrival" id="arrival-btn" onclick="markArrival()">
+            <div class="btn-label">ARRIVAL</div>
+            <div class="btn-time" id="arrival-display">—</div>
+            <div class="btn-pending" id="arrival-status">Tap to mark</div>
+          </button>
+          <button class="time-btn time-btn-leaving" id="leaving-btn" onclick="markLeaving()">
+            <div class="btn-label">LEAVING</div>
+            <div class="btn-time" id="leaving-display">—</div>
+            <div class="btn-pending" id="leaving-status">Tap to mark</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="emp-history" class="tab-content">
+      <div class="stats-row" id="emp-stats-row">
+        <div class="stat-card"><div class="stat-num purple" id="stat-total">—</div><div class="stat-label">Total Days</div></div>
+        <div class="stat-card"><div class="stat-num green" id="stat-present">—</div><div class="stat-label">Present</div></div>
+        <div class="stat-card"><div class="stat-num red" id="stat-missed">—</div><div class="stat-label">Missed</div></div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn" onclick="loadMyAttendance(5, this)">5 Days</button>
+        <button class="filter-btn" onclick="loadMyAttendance(10, this)">10 Days</button>
+        <button class="filter-btn active" onclick="loadMyAttendance(15, this)">15 Days</button>
+        <button class="filter-btn" onclick="loadMyAttendance(30, this)">30 Days</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Arrival</th>
+                <th>Leaving</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="emp-attendance-body">
+              <tr><td colspan="4" class="loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ ADMIN PAGE ════════════════════ -->
+<div id="admin-page" class="page">
+  <nav class="navbar">
+    <div class="nav-logo">Attend<span>X</span> <span style="font-size:11px;color:var(--muted);font-family:'DM Sans';font-weight:400;">Admin</span></div>
+    <div class="nav-right">
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('admin', 'employees', this)">Employees</div>
+    <div class="tab" onclick="switchTab('admin', 'attendance', this)">Attendance</div>
+  </div>
+
+  <div class="content">
+
+    <!-- EMPLOYEES TAB -->
+    <div id="admin-employees" class="tab-content active">
+
+      <!-- Create Employee -->
+      <div class="card">
+        <div class="card-title">➕ Add New Employee</div>
+        <div class="inline-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="new-name" placeholder="Rahul Sharma" />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="new-email" placeholder="rahul@company.com" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Password</label>
+              <input type="text" id="new-password" placeholder="Set a password" />
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;">
+              <button class="btn btn-primary" style="height:44px;" onclick="createEmployee()">Create Employee</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee List -->
+      <div class="card">
+        <div class="card-title">👥 All Employees</div>
+        <div class="emp-list" id="emp-list-container">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE TAB -->
+    <div id="admin-attendance" class="tab-content">
+
+      <!-- Filter + Employee Select -->
+      <div class="card">
+        <div class="card-title">🔍 View Attendance</div>
+        <div class="emp-select-wrap">
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.6px;">Select Employee</label>
+          <select id="admin-emp-select" onchange="loadAdminAttendance()">
+            <option value="all">All Employees</option>
+          </select>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn" onclick="setAdminDays(5, this)">5 Days</button>
+          <button class="filter-btn" onclick="setAdminDays(10, this)">10 Days</button>
+          <button class="filter-btn active" onclick="setAdminDays(15, this)">15 Days</button>
+          <button class="filter-btn" onclick="setAdminDays(30, this)">30 Days</button>
+        </div>
+      </div>
+
+      <!-- Stats (single employee) -->
+      <div id="admin-stats-row" class="stats-row" style="display:none;">
+        <div class="stat-card"><div class="stat-num purple" id="admin-stat-total">—</div><div class="stat-label">Total Days</div></div>
+        <div class="stat-card"><div class="stat-num green" id="admin-stat-present">—</div><div class="stat-label">Present</div></div>
+        <div class="stat-card"><div class="stat-num red" id="admin-stat-missed">—</div><div class="stat-label">Missed</div></div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th id="admin-table-name-col">Employee</th>
+                <th>Date</th>
+                <th>Arrival</th>
+                <th>Leaving</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-attendance-body">
+              <tr><td colspan="5" class="loading">Select filter to load...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '';  // same origin
+  let token = localStorage.getItem('token');
+  let currentUser = null;
+  let adminDays = 15;
+
+  // ── INIT ──
+  window.onload = () => {
+    if (token) {
+      fetchMe();
+    }
+    updateTodayDate();
+  };
+
+  function updateTodayDate() {
+    const d = new Date();
+    const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const el = document.getElementById('today-date-display');
+    if (el) el.textContent = d.toLocaleDateString('en-IN', opts);
+  }
+
+  // ── AUTH ──
+  async function fetchMe() {
+    try {
+      const res = await fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } });
+      if (!res.ok) { logout(); return; }
+      currentUser = await res.json();
+      showDashboard();
+    } catch { logout(); }
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'none';
+
+    if (!email || !password) {
+      errEl.textContent = 'Please enter email and password';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errEl.textContent = data.error || 'Login failed';
+        errEl.style.display = 'block';
+        return;
+      }
+      token = data.token;
+      currentUser = data.user;
+      localStorage.setItem('token', token);
+      showDashboard();
+    } catch {
+      errEl.textContent = 'Server error. Is the server running?';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function showDashboard() {
+    if (currentUser.role === 'admin') {
+      showPage('admin-page');
+      loadEmployeeList();
+      populateAdminSelect();
+    } else {
+      showPage('employee-page');
+      document.getElementById('emp-name').textContent = currentUser.name;
+      loadTodayStatus();
+      loadMyAttendance(15);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    token = null;
+    currentUser = null;
+    showPage('login-page');
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+  }
+
+  // ── PAGES & TABS ──
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function switchTab(prefix, name, el) {
+    document.querySelectorAll(`#${prefix}-page .tab`).forEach(t => t.classList.remove('active'));
+    document.querySelectorAll(`#${prefix}-page .tab-content`).forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`${prefix}-${name}`).classList.add('active');
+
+    if (prefix === 'admin' && name === 'attendance') loadAdminAttendance();
+    if (prefix === 'emp' && name === 'history') loadMyAttendance(15);
+  }
+
+  // ── EMPLOYEE: TODAY ──
+  async function loadTodayStatus() {
+    try {
+      const res = await fetch('/api/attendance/my?days=1', { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+      const today = data.today;
+
+      if (today) {
+        if (today.arrival_time) {
+          document.getElementById('arrival-display').textContent = formatTime(today.arrival_time);
+          document.getElementById('arrival-status').textContent = 'Marked ✓';
+          document.getElementById('arrival-btn').disabled = true;
+        }
+        if (today.leaving_time) {
+          document.getElementById('leaving-display').textContent = formatTime(today.leaving_time);
+          document.getElementById('leaving-status').textContent = 'Marked ✓';
+          document.getElementById('leaving-btn').disabled = true;
+        }
+      }
+    } catch {}
+  }
+
+  async function markArrival() {
+    try {
+      const res = await fetch('/api/attendance/mark-arrival', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error, 'error'); return; }
+
+      document.getElementById('arrival-display').textContent = formatTime(data.time);
+      document.getElementById('arrival-status').textContent = 'Marked ✓';
+      document.getElementById('arrival-btn').disabled = true;
+      showToast('Arrival marked at ' + formatTime(data.time), 'success');
+    } catch { showToast('Error connecting to server', 'error'); }
+  }
+
+  async function markLeaving() {
+    try {
+      const res = await fetch('/api/attendance/mark-leaving', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error, 'error'); return; }
+
+      document.getElementById('leaving-display').textContent = formatTime(data.time);
+      document.getElementById('leaving-status').textContent = 'Marked ✓';
+      document.getElementById('leaving-btn').disabled = true;
+      showToast('Leaving marked at ' + formatTime(data.time), 'success');
+    } catch { showToast('Error connecting to server', 'error'); }
+  }
+
+  // ── EMPLOYEE: HISTORY ──
+  async function loadMyAttendance(days, btn) {
+    if (btn) {
+      document.querySelectorAll('#emp-history .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    try {
+      const res = await fetch(`/api/attendance/my?days=${days}`, { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+
+      document.getElementById('stat-total').textContent = data.total_days;
+      document.getElementById('stat-present').textContent = data.present_days;
+      document.getElementById('stat-missed').textContent = data.missed_days;
+
+      renderAttendanceTable('emp-attendance-body', data.records, false);
+    } catch {
+      document.getElementById('emp-attendance-body').innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load</td></tr>';
+    }
+  }
+
+  // ── ADMIN: EMPLOYEES ──
+  async function loadEmployeeList() {
+    try {
+      const res = await fetch('/api/admin/employees', { headers: { Authorization: 'Bearer ' + token } });
+      const employees = await res.json();
+      const container = document.getElementById('emp-list-container');
+
+      if (!employees.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">👤</div>No employees yet. Add one above!</div>';
+        return;
+      }
+
+      container.innerHTML = employees.map(e => `
+        <div class="emp-item" id="emp-item-${e.id}">
+          <div class="emp-info">
+            <div class="emp-name">${e.name}</div>
+            <div class="emp-email">${e.email}</div>
+          </div>
+          <div class="emp-actions">
+            <button class="btn btn-secondary btn-sm" onclick="viewEmpAttendance(${e.id}, '${e.name}')">View</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${e.id}, '${e.name}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    } catch {}
+  }
+
+  async function createEmployee() {
+    const name = document.getElementById('new-name').value.trim();
+    const email = document.getElementById('new-email').value.trim();
+    const password = document.getElementById('new-password').value.trim();
+
+    if (!name || !email || !password) { showToast('Fill all fields', 'error'); return; }
+
+    try {
+      const res = await fetch('/api/admin/employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error, 'error'); return; }
+
+      showToast(data.message, 'success');
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-email').value = '';
+      document.getElementById('new-password').value = '';
+      loadEmployeeList();
+      populateAdminSelect();
+    } catch { showToast('Server error', 'error'); }
+  }
+
+  async function deleteEmployee(id, name) {
+    if (!confirm(`Delete employee "${name}"? This will also delete their attendance records.`)) return;
+    try {
+      const res = await fetch(`/api/admin/employees/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (res.ok) {
+        showToast(`${name} deleted`, 'success');
+        loadEmployeeList();
+        populateAdminSelect();
+      }
+    } catch {}
+  }
+
+  function viewEmpAttendance(id, name) {
+    // Switch to attendance tab and select this employee
+    const tabs = document.querySelectorAll('#admin-page .tab');
+    const contents = document.querySelectorAll('#admin-page .tab-content');
+    tabs.forEach(t => t.classList.remove('active'));
+    contents.forEach(c => c.classList.remove('active'));
+    tabs[1].classList.add('active');
+    document.getElementById('admin-attendance').classList.add('active');
+
+    document.getElementById('admin-emp-select').value = id;
+    loadAdminAttendance();
+  }
+
+  // ── ADMIN: ATTENDANCE ──
+  async function populateAdminSelect() {
+    try {
+      const res = await fetch('/api/admin/employees', { headers: { Authorization: 'Bearer ' + token } });
+      const employees = await res.json();
+      const select = document.getElementById('admin-emp-select');
+      select.innerHTML = '<option value="all">All Employees</option>' +
+        employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+    } catch {}
+  }
+
+  function setAdminDays(days, btn) {
+    adminDays = days;
+    document.querySelectorAll('#admin-attendance .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadAdminAttendance();
+  }
+
+  async function loadAdminAttendance() {
+    const empId = document.getElementById('admin-emp-select').value;
+    const statsRow = document.getElementById('admin-stats-row');
+    const nameCol = document.getElementById('admin-table-name-col');
+
+    try {
+      if (empId === 'all') {
+        statsRow.style.display = 'none';
+        nameCol.style.display = '';
+        const res = await fetch(`/api/admin/attendance/all?days=${adminDays}`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const records = await res.json();
+        renderAttendanceTable('admin-attendance-body', records, true);
+      } else {
+        nameCol.style.display = 'none';
+        statsRow.style.display = 'grid';
+        const res = await fetch(`/api/admin/attendance/${empId}?days=${adminDays}`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        document.getElementById('admin-stat-total').textContent = data.total_days;
+        document.getElementById('admin-stat-present').textContent = data.present_days;
+        document.getElementById('admin-stat-missed').textContent = data.missed_days;
+        renderAttendanceTable('admin-attendance-body', data.records, false);
+      }
+    } catch {
+      document.getElementById('admin-attendance-body').innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load</td></tr>';
+    }
+  }
+
+  // ── RENDER TABLE ──
+  function renderAttendanceTable(tbodyId, records, showName) {
+    const tbody = document.getElementById(tbodyId);
+    if (!records.length) {
+      tbody.innerHTML = `<tr><td colspan="${showName ? 5 : 4}" class="empty-state"><div class="icon">📋</div>No records found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = records.map(r => {
+      const status = getStatus(r);
+      const badge = status === 'Present' ? 'present' : status === 'Missed' ? 'missed' : 'partial';
+      const nameCell = showName ? `<td>${r.name || '—'}</td>` : '';
+      return `
+        <tr>
+          ${nameCell}
+          <td>${formatDate(r.date)}</td>
+          <td>${r.arrival_time ? formatTime(r.arrival_time) : '<span style="color:var(--muted)">—</span>'}</td>
+          <td>${r.leaving_time ? formatTime(r.leaving_time) : '<span style="color:var(--muted)">—</span>'}</td>
+          <td><span class="badge badge-${badge}">${status}</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── UTILS ──
+  function getStatus(r) {
+    if (r.status === 'missed') return 'Missed';
+    if (r.arrival_time && r.leaving_time) return 'Present';
+    if (r.arrival_time && !r.leaving_time) return 'Partial';
+    return 'Missed';
+  }
+
+  function formatTime(t) {
+    if (!t) return '—';
+    const [h, m] = t.split(':');
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const h12 = hour % 12 || 12;
+    return `${h12}:${m} ${ampm}`;
+  }
+
+  function formatDate(d) {
+    if (!d) return '—';
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // Enter key on login
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('login-page').classList.contains('active')) {
+      doLogin();
+    }
+  });
+</script>
+</body>
+</html>
